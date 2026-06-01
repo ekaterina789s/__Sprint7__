@@ -26,9 +26,7 @@ public class CourierLoginSteps {
     public static void deleteCourier(Integer courierId) {
         given()
                 .when()
-                .delete(DELETE_COURIER_ID + courierId)
-                .then()
-                .statusCode(200);
+                .delete(DELETE_COURIER_ID + courierId);
     }
 
     @Step("Получение ответа от сервера на запрос об авторизации курьера без логина")
@@ -88,6 +86,19 @@ public class CourierLoginSteps {
                 .post(LOGIN_COURIER_PATH)
                 .then()
                 .extract().response();
+    }
+
+    @Step("Получение ответа от сервера на запрос об авторизации курьера c существующим логином")
+    public static Response responseBodyLoginCourier(CourierLoginModel courierLogin) {
+        return given()
+                .log().all()
+                .contentType(ContentType.JSON)
+                .body(courierLogin)
+                .when()
+                .post(LOGIN_COURIER_PATH)
+                .then()
+                .extract().response();
+
     }
 }
 

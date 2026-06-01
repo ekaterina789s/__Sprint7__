@@ -3,23 +3,50 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import model.CourierLoginModel;
+import model.CourierModel;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import static data.CourierData.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static steps.CourierLoginSteps.*;
+import static steps.CourierLoginSteps.responseBodyLoginCourier;
+import static steps.CourierSteps.createCourier;
 
 public class LoginCourierTest  extends BaseApiTest {
     private Integer courierId;
+    private String uniqueLogin;
+    CourierLoginModel courierLogin;
+    CourierLoginModel courierWithoutLogin;
+    CourierLoginModel courierWithoutPassword;
+    CourierLoginModel courierInvalidLogin;
+    CourierLoginModel courierInvalidPassword;
+    CourierLoginModel courierInvalidLoginAndPassword;
 
-    CourierLoginModel courierLogin = new CourierLoginModel(LOGIN_REPLAY, PASSWORD);
-    CourierLoginModel courierWithoutLogin = new CourierLoginModel(null, PASSWORD);
-    CourierLoginModel courierWithoutPassword = new CourierLoginModel(LOGIN_REPLAY, null);
-    CourierLoginModel courierInvalideLogin = new CourierLoginModel(LOGIN_INVALIDE, PASSWORD);
-    CourierLoginModel courierInvalidePassword = new CourierLoginModel(LOGIN_REPLAY, PASSWORD_INVALIDE);
-    CourierLoginModel courierInvalideLoginAndPassword = new CourierLoginModel(LOGIN_INVALIDE, PASSWORD_INVALIDE);
+    @Before
+    public  void initializeCourier() {
+        uniqueLogin = "courier_" + System.currentTimeMillis();
+        // Создаём курьера перед выполнением тестов
+        CourierModel courier = new CourierModel(uniqueLogin, PASSWORD, FIRST_NAME);
+        Response createResponse = createCourier(courier);
+        createResponse.then()
+                .log().all()
+                .statusCode(201)
+                .body("ok", equalTo(true));
+
+        System.out.println("Курьер успешно создан для тестов авторизации с логином: " + uniqueLogin);
+
+        // ИСПРАВЛЕНО: все модели теперь используют uniqueLogin вместо фиксированного LOGIN
+        courierLogin = new CourierLoginModel(uniqueLogin, PASSWORD);
+        courierWithoutLogin = new CourierLoginModel(null, PASSWORD);
+        courierWithoutPassword = new CourierLoginModel(uniqueLogin, null);
+        courierInvalidLogin = new CourierLoginModel("invalid_login", PASSWORD);
+        courierInvalidPassword = new CourierLoginModel(uniqueLogin, "invalid_password");
+        courierInvalidLoginAndPassword = new CourierLoginModel("invalid_login", "invalid_password");
+    }
+
 
     @Test
     @DisplayName("Получение ID курьера")
@@ -40,17 +67,13 @@ public class LoginCourierTest  extends BaseApiTest {
     @Test
     @DisplayName("Проверка на корректное отображение тела ответа при авторизации курьера")
     @Description("Сверяем корректное отображение значения ключа id, а также в целом весь ответ от сервера")
-    public void getResponseBodyLoginCourier() {
-        given()
-                .log().all()
-                .contentType(ContentType.JSON)
-                .body(courierLogin)
-                .when()
-                .post(LOGIN_COURIER_PATH)
-                .then()
+    public void courierAuthorizationWithLogin() {
+        Response response = responseBodyLoginCourier(courierLogin);
+
+        response.then()
                 .log().all()
                 .statusCode(200)
-                .body("id", equalTo(750546));
+                .body("id", notNullValue());
     }
 
     @Test
@@ -75,23 +98,23 @@ public class LoginCourierTest  extends BaseApiTest {
                 .statusCode(400)
                 .body("message", equalTo("Недостаточно данных для входа"));
     }
-@Test
+    @Test
     @DisplayName("Неправильное указание логина при авторизации курьера")
     @Description("Система вернет ошибку")
-    public void courierAuthorizationInvalideLogin(){
-    responseCourierNonExistentLogin(courierInvalideLogin)
+    public void courierAuthorizationInvalidLogin(){
+        responseCourierNonExistentLogin(courierInvalidLogin)
                 .then()
                 .log().all()
                 .statusCode(404)
                 .body("message", equalTo("Учетная запись не найдена"));
 
-}
+    }
 
     @Test
     @DisplayName("Неправильное указание пароля при авторизации курьера")
     @Description("Система вернет ошибку")
-    public void courierAuthorizationInvalidePassword(){
-        responseCourierNonExistentPassword(courierInvalidePassword)
+    public void courierAuthorizationInvalidPassword(){
+        responseCourierNonExistentPassword(courierInvalidPassword)
                 .then()
                 .log().all()
                 .statusCode(404)
@@ -100,8 +123,8 @@ public class LoginCourierTest  extends BaseApiTest {
     @Test
     @DisplayName("Неправильное указание пароля и логина при авторизации курьера")
     @Description("Система вернет ошибку")
-    public void courierAuthorizationInvalideLoginAndPassword(){
-        responseCourierNonExistentLoginAndPassword(courierInvalideLoginAndPassword)
+    public void courierAuthorizationInvalidLoginAndPassword(){
+        responseCourierNonExistentLoginAndPassword(courierInvalidLoginAndPassword)
                 .then()
                 .log().all()
                 .statusCode(404)
@@ -110,10 +133,10 @@ public class LoginCourierTest  extends BaseApiTest {
 
     @After
     public void cleanUp() {
-     if (courierId != null) {
-       System.out.println("Удаляем курьера с ID: " + courierId);
-      deleteCourier(courierId);
-    }
+        if (courierId != null) {
+            System.out.println("Удаляем курьера с ID: " + courierId);
+            deleteCourier(courierId);
+        }
     }
 }
 
