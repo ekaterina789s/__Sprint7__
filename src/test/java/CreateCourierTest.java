@@ -28,8 +28,8 @@ public class CreateCourierTest extends BaseApiTest {
     @DisplayName("Нельзя создать двух одинаковых курьеров")
     @Description("Запрос с повторяющимся логином вернет ошибку")
         public void testCreateCourierReplayLogin(){
-     CourierModel courier2 = new CourierModel(LOGIN_REPLAY, PASSWORD, FIRST_NAME);
-            createCourier2(courier2)
+     CourierModel courierWithExistingLogin = new CourierModel(LOGIN_REPLAY, PASSWORD, FIRST_NAME);
+            createCourierWithExistingLogin(courierWithExistingLogin)
                     .then()
                     .log().all()
                     .statusCode(409)
@@ -40,8 +40,8 @@ public class CreateCourierTest extends BaseApiTest {
     @DisplayName("Создание курьера без логина")
     @Description("Если создать курьера без логина, то вернется ошибка от сервера")
     public void testCreateCourierWithoutLogin(){
-        CourierModel courier3 = new CourierModel(null, PASSWORD, FIRST_NAME);
-        createCourier3(courier3)
+        CourierModel courierWithoutLogin = new CourierModel(null, PASSWORD, FIRST_NAME);
+            createCourierWithoutLogin(courierWithoutLogin)
                 .then()
                 .log().all()
                 .statusCode(400)
@@ -52,8 +52,8 @@ public class CreateCourierTest extends BaseApiTest {
     @DisplayName("Создание курьера без пароля")
     @Description("Если создать курьера без пароля, то вернется ошибка от сервера")
     public void testCreateCourierWithoutPassword(){
-        CourierModel courier4 = new CourierModel(LOGIN, null, FIRST_NAME);
-            createCourier4(courier4)
+        CourierModel courierWithoutPassword = new CourierModel(LOGIN, null, FIRST_NAME);
+            createCourierWithoutPassword(courierWithoutPassword)
                     .then()
                     .log().all()
                     .statusCode(400)

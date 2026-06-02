@@ -26,11 +26,11 @@ public class CourierSteps {
 //шаг для создания курьера с повторным логином
 
     @Step("Создание курьера с уже имеющимся логином, ручка /api/v1/courier")
-    public static Response createCourier2(CourierModel courier2) {
+    public static Response createCourierWithExistingLogin(CourierModel courierWithExistingLogin) {
         return given()
                 .log().all()
                 .contentType(ContentType.JSON)
-                .body(courier2)
+                .body(courierWithExistingLogin)
                 .when()
                 .post(CREATE_COURIER_PATH)
                 .then()
@@ -38,11 +38,11 @@ public class CourierSteps {
     }
 
     @Step("Создание курьера без логина, ручка /api/v1/courier")
-    public static Response createCourier3(CourierModel courier3) {
+    public static Response createCourierWithoutLogin(CourierModel courierWithoutLogin) {
         return given()
                 .log().all()
                 .contentType(ContentType.JSON)
-                .body(courier3)
+                .body(courierWithoutLogin)
                 .when()
                 .post(CREATE_COURIER_PATH)
                 .then()
@@ -50,11 +50,11 @@ public class CourierSteps {
     }
 
     @Step("Создание курьера без пароля, ручка /api/v1/courier")
-    public static Response createCourier4(CourierModel courier4) {
+    public static Response createCourierWithoutPassword(CourierModel courierWithoutPassword) {
         return given()
                 .log().all()
                 .contentType(ContentType.JSON)
-                .body(courier4)
+                .body(courierWithoutPassword)
                 .when()
                 .post(CREATE_COURIER_PATH)
                 .then()
